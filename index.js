@@ -34,10 +34,10 @@ async function checkSteamGames() {
 
         if (games.length > 0) {
             console.log(`Found ${games.length} games. Sending notification...`);
-            await sendTelegramNotification(games);
         } else {
-            console.log('No games found currently matching the filters.');
+            console.log('No games found currently matching the filters. Sending empty notification...');
         }
+        await sendTelegramNotification(games);
 
     } catch (error) {
         console.error('Error fetching Steam data:', error.message);
@@ -50,12 +50,16 @@ async function sendTelegramNotification(games) {
         return;
     }
 
-    let message = `🎮 <b>Нові безкоштовні ігри на Steam!</b>\n\n`;
-    games.forEach((game, index) => {
-        message += `${index + 1}. <a href="${game.link}">${game.title}</a>\n`;
-    });
-    
-    message += `\n<a href="${STEAM_URL}">🔗 Переглянути всі</a>`;
+    let message = '';
+    if (games.length > 0) {
+        message = `🎮 <b>Нові безкоштовні ігри на Steam!</b>\n\n`;
+        games.forEach((game, index) => {
+            message += `${index + 1}. <a href="${game.link}">${game.title}</a>\n`;
+        });
+        message += `\n<a href="${STEAM_URL}">🔗 Переглянути всі</a>`;
+    } else {
+        message = `🎮 <b>Наразі немає безкоштовних ігор зі 100% знижкою.</b>\n\nМожете переконатися самі:\n<a href="${STEAM_URL}">🔗 Переглянути пошук Steam</a>`;
+    }
 
     try {
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
